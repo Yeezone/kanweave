@@ -1,0 +1,30 @@
+# 团队共用的织板：一台服务器、一份数据、所有设备同一个看板。
+#
+#   cp .env.example .env        # 填域名 / 钉钉应用 / 上限
+#   docker compose up -d --build
+#
+# 只监听回环地址，公网入口交给 Caddy 或 Nginx（见 deploy/Caddyfile、docs/deploy-cloud.md）。
+services:
+  kanweave:
+    build: .
+    image: kanweave:latest
+    container_name: kanweave
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      KW_HOST: 0.0.0.0
+      KW_PORT: "4280"
+      KW_DATA_DIR: /data
+    ports:
+      - "127.0.0.1:4280:4280"
+    volumes:
+      - kanweave-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  kanweave-data:

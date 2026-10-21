@@ -1,0 +1,27 @@
+# Caddy 反代示例：自动申请 HTTPS 证书。
+#   sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+#   sudo sed -i 's/pm.example.com/你的域名/' /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+
+pm.example.com {
+	encode zstd gzip
+
+	# 附件默认上限 1 GiB，反代留出余量。
+	request_body {
+		max_size 1100MB
+	}
+
+	# SSE（实时协作）不能被缓冲：flush_interval -1 让每个事件立即下发。
+	reverse_proxy 127.0.0.1:4280 {
+		flush_interval -1
+		transport http {
+			read_timeout 3600s
+			write_timeout 3600s
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+	}
+}

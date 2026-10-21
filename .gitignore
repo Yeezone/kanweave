@@ -1,0 +1,9 @@
+node_modules/
+lib/
+public/app.js
+.data/
+.data-*/
+*.log
+*.sqlite
+*.sqlite-*
+.DS_Store

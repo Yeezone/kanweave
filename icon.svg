@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 看板外框与顶栏 -->
+  <rect x="3" y="3.5" width="18" height="17" rx="2.5"/>
+  <path d="M3 8h18"/>
+  <!-- 三列 -->
+  <path d="M8.6 8v12.5"/>
+  <path d="M15.4 8v12.5"/>
+  <!-- 左列两张卡片 -->
+  <rect x="4.6" y="10.4" width="2.4" height="1.1" rx="0.4" fill="currentColor" stroke="none"/>
+  <rect x="4.6" y="13.1" width="2.4" height="1.1" rx="0.4" fill="currentColor" stroke="none" opacity="0.55"/>
+  <!-- 中列卡片 + 播放三角（媒体卡片） -->
+  <rect x="10.2" y="10.4" width="3.6" height="4.6" rx="0.7"/>
+  <path d="M11.6 12.1l1.7 0.9-1.7 0.9z" fill="currentColor" stroke="none"/>
+  <!-- 右列两张卡片 -->
+  <rect x="16.6" y="10.4" width="2.4" height="1.1" rx="0.4" fill="currentColor" stroke="none" opacity="0.55"/>
+  <rect x="16.6" y="13.1" width="2.4" height="1.1" rx="0.4" fill="currentColor" stroke="none"/>
+</svg>
