@@ -45,6 +45,10 @@ docker build -t kanweave .
 docker run -d --name kanweave -p 4280:4280 -v kanweave-data:/data kanweave
 ```
 
+Even the build is optional: grab `kanweave-<version>-standalone.zip` from
+[Releases](https://github.com/Yeezone/kanweave/releases), unzip it and run `node lib/standalone.js`
+(the bundle already ships `lib/` and `public/`, so no `pnpm install` needed).
+
 ## Deploy for a team (one shared space in the cloud)
 
 Target shape: **one cloud server + one domain**, every device opens the same board, and the DSH plugin points at it too.

@@ -45,6 +45,9 @@ docker build -t kanweave .
 docker run -d --name kanweave -p 4280:4280 -v kanweave-data:/data kanweave
 ```
 
+连构建都省了：从 [Releases](https://github.com/Yeezone/kanweave/releases) 下载 `kanweave-<版本>-standalone.zip`，
+解压后直接 `node lib/standalone.js`（压缩包里已含 `lib/` 与 `public/`，无需 `pnpm install`）。
+
 ## 部署给团队用（云端一份数据）
 
 目标形态：**一台云服务器 + 一个域名**，任何设备打开同一个看板，DSH 插件也指向它。
