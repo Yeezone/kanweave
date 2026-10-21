@@ -2,6 +2,10 @@
 
 [English](README.en.md) | **简体中文**
 
+[![CI](https://github.com/Yeezone/kanweave/actions/workflows/ci.yml/badge.svg)](https://github.com/Yeezone/kanweave/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A522.19-339933.svg)](https://nodejs.org)
+
 一个可以**自己部署、也可以装进 DeepSeek Harness**的项目管理产品：项目 → 栏目 → 卡片，卡片里能贴图、传视频、写 Markdown 评论；支持钉钉扫码登录、按项目邀请成员并设置管理员；多人同时看看板会实时同步。
 
 零运行时 npm 依赖：数据库用 Node 内置的 `node:sqlite`，HTTP 用 `node:http`，构建产物是几个 `.js` 文件，拷到服务器上 `node lib/standalone.js` 就能跑。

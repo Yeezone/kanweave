@@ -2,6 +2,10 @@
 
 **English** | [简体中文](README.md)
 
+[![CI](https://github.com/Yeezone/kanweave/actions/workflows/ci.yml/badge.svg)](https://github.com/Yeezone/kanweave/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A522.19-339933.svg)](https://nodejs.org)
+
 A self-hostable project-management product that also installs as a **DeepSeek Harness** plugin. Projects → lists → cards, with images and videos attached to cards, Markdown comments, DingTalk QR sign-in, per-project roles and invite links, and live board updates while several people work at once.
 
 Zero runtime npm dependencies: the database is Node's built-in `node:sqlite`, HTTP is `node:http`, and the build output is a handful of `.js` files — copy them to a server and run `node lib/standalone.js`.
