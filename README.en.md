@@ -85,6 +85,47 @@ After restarting DeepSeek Harness a **织板 / KanWeave** entry appears in the s
 
 By default the plugin stores data on the local machine (`~/.dsh/kanweave`). With `cloud.json` it proxies to the shared deployment instead and keeps nothing locally — see section 4 of the deployment guide.
 
+## Enabling DingTalk QR sign-in
+
+The button appears only when all three conditions hold:
+
+1. **The server has credentials** — either `KW_DINGTALK_*` environment variables or a `dingtalk.json` inside the data directory (the file is friendlier for the desktop plugin, where the launcher makes env vars awkward).
+2. **You actually reach a login screen** — in plugin mode KanWeave signs you in automatically as the local operator, so click **“Sign in as someone else” (bottom-left rail)**; the DingTalk button lives on that login screen.
+3. **The redirect URL registered in the DingTalk console matches byte for byte** (scheme, port, path).
+
+Helper script (plugin data dir defaults to `~/.dsh/kanweave`, standalone to `./.data`):
+
+```bash
+node scripts/set-dingtalk.mjs --status        # is it enabled right now?
+node scripts/set-dingtalk.mjs --mock          # offline demo: button works, no DingTalk app needed (UI check only)
+node scripts/set-dingtalk.mjs --clear         # switch it off
+```
+
+Real DingTalk (internal enterprise app; no review required, QR sign-in does not need publishing to the workbench):
+
+```bash
+node scripts/set-dingtalk.mjs \
+  --app-key dingxxxxxxxxxxxx \
+  --app-secret YOUR_APP_SECRET \
+  --corp-id dingyyyyyyyyyyyy \
+  --redirect-uri https://pm.example.com/kanweave/api/auth/dingtalk/callback
+```
+
+The script writes exactly this file (mode 0600; both the console names `appKey/appSecret` and the OAuth2 names `clientId/clientSecret` are accepted):
+
+```json
+{
+  "appKey": "dingxxxxxxxxxxxx",
+  "appSecret": "YOUR_APP_SECRET",
+  "corpId": "dingyyyyyyyyyyyy",
+  "redirectUri": "https://pm.example.com/kanweave/api/auth/dingtalk/callback"
+}
+```
+
+> **Which redirect URL?** After the cloud deployment use `https://<domain>/kanweave/api/auth/dingtalk/callback` — a stable host that works from any device and any plugin instance (recommended).
+> A local `http://127.0.0.1:<port>/kanweave/api/auth/dingtalk/callback` is also accepted by DingTalk (localhost is allowed), but the DSH port changes on every launch, so it is debug-only.
+> Restart DeepSeek Harness (or the standalone process) after editing the file. Confirm with the `dingtalk` field of `GET /kanweave/api/health`; whether the button renders comes from `capabilities.dingtalkLogin` in `api/auth/state`.
+
 ## Configuration
 
 | Variable | Default | Purpose |

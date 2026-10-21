@@ -86,6 +86,47 @@ dsh plugin --profile desktop add link:E:/Projects/ProjectEdit   # 换成你自�
 
 插件默认使用本机数据目录 `~/.dsh/kanweave`；配好 `cloud.json` 后改为转发到云端，本机不存项目数据（见 [docs/deploy-cloud.md](docs/deploy-cloud.md) 第 4 节）。
 
+## 开启钉钉扫码登录
+
+按钮出现需要三个条件同时成立：
+
+1. **服务端拿到凭据**：`KW_DINGTALK_*` 环境变量，或数据目录里的 `dingtalk.json`（插件/桌面端推荐后者，因为桌面启动器不便设环境变量）；
+2. **看到登录页**：插件形态默认以「本机用户」身份自动登录，要**点左下角的「登录其他账号」**才进入登录页，「使用钉钉登录」按钮在那里；
+3. **钉钉控制台的重定向 URL 与配置逐字一致**（含协议、端口、路径）。
+
+开关脚本（插件数据目录默认 `~/.dsh/kanweave`，独立站默认 `./.data`）：
+
+```bash
+node scripts/set-dingtalk.mjs --status        # 当前是否启用
+node scripts/set-dingtalk.mjs --mock          # 离线演示：按钮可点，不需要钉钉应用，只用于确认 UI
+node scripts/set-dingtalk.mjs --clear         # 关闭
+```
+
+接真实钉钉（企业内部应用，免审核，扫码登录不需要发布到工作台）：
+
+```bash
+node scripts/set-dingtalk.mjs \
+  --app-key dingxxxxxxxxxxxx \
+  --app-secret 你的AppSecret \
+  --corp-id dingyyyyyyyyyyyy \
+  --redirect-uri https://pm.example.com/kanweave/api/auth/dingtalk/callback
+```
+
+脚本写入的就是这个文件（权限 0600，字段名同时接受钉钉控制台的 `appKey/appSecret` 和 OAuth2 的 `clientId/clientSecret`）：
+
+```json
+{
+  "appKey": "dingxxxxxxxxxxxx",
+  "appSecret": "你的AppSecret",
+  "corpId": "dingyyyyyyyyyyyy",
+  "redirectUri": "https://pm.example.com/kanweave/api/auth/dingtalk/callback"
+}
+```
+
+> **重定向 URL 选哪个**：云端部署后固定用 `https://<域名>/kanweave/api/auth/dingtalk/callback`，任何设备、任何插件实例都能回调，推荐。
+> 本机直连 `http://127.0.0.1:<端口>/kanweave/api/auth/dingtalk/callback` 也能回调（钉钉允许 localhost），但 DSH 每次启动端口会变，要同步改配置，只适合临时调试。
+> 改完文件后**必须重启** DeepSeek Harness（或独立站进程）才生效；`GET /kanweave/api/health` 的 `dingtalk` 字段（`configured` / `mock`）可以直接确认，登录页是否有按钮取决于 `api/auth/state` 的 `capabilities.dingtalkLogin`。
+
 ## 配置项（常用）
 
 | 变量 | 默认 | 说明 |

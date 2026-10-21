@@ -523,3 +523,61 @@ describe('public HTTPS deployment', () => {
     }
   })
 })
+describe('dingtalk.json configuration', () => {
+  it('reads console-style appKey/appSecret from the data directory', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'kanweave-dt-'))
+    try {
+      const { writeFile } = await import('node:fs/promises')
+      await writeFile(
+        join(dir, 'dingtalk.json'),
+        JSON.stringify({
+          appKey: 'ding-app-key',
+          appSecret: 'ding-app-secret',
+          corpId: 'ding-corp',
+          redirectUri: 'https://pm.example.com/kanweave/api/auth/dingtalk/callback',
+        }),
+        'utf8',
+      )
+      const options = resolveOptions({ mode: 'standalone', dataDir: dir, uiDir: join(dir, 'public') })
+      expect(options.dingtalk.clientId).toBe('ding-app-key')
+      expect(options.dingtalk.clientSecret).toBe('ding-app-secret')
+      expect(options.dingtalk.corpId).toBe('ding-corp')
+      expect(options.dingtalk.redirectUri).toBe('https://pm.example.com/kanweave/api/auth/dingtalk/callback')
+      expect(options.dingtalk.mock).toBe(false)
+
+      const service = new KanWeaveService({ ...options, dataDir: dir })
+      try {
+        expect(service.dingtalk.configured).toBe(true)
+        expect(service.dingtalk.enabled).toBe(true)
+      } finally {
+        service.close()
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('enables the offline mock provider from the file and prefers env credentials', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'kanweave-dt-'))
+    try {
+      const { writeFile } = await import('node:fs/promises')
+      await writeFile(join(dir, 'dingtalk.json'), JSON.stringify({ mock: 'yes', clientId: 'file-id' }), 'utf8')
+      const fromFile = resolveOptions({ mode: 'standalone', dataDir: dir, uiDir: join(dir, 'public') })
+      expect(fromFile.dingtalk.mock).toBe(true)
+      expect(fromFile.dingtalk.clientId).toBe('file-id')
+
+      process.env.KW_DINGTALK_CLIENT_ID = 'env-id'
+      process.env.KW_DINGTALK_CLIENT_SECRET = 'env-secret'
+      try {
+        const fromEnv = resolveOptions({ mode: 'standalone', dataDir: dir, uiDir: join(dir, 'public') })
+        expect(fromEnv.dingtalk.clientId).toBe('env-id')
+        expect(fromEnv.dingtalk.clientSecret).toBe('env-secret')
+      } finally {
+        delete process.env.KW_DINGTALK_CLIENT_ID
+        delete process.env.KW_DINGTALK_CLIENT_SECRET
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+})

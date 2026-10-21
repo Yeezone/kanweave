@@ -1,6 +1,6 @@
 {
   "name": "dsh-kanweave",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "KanWeave（织板）— a self-hostable project-management product (projects, lists, cards, image/video attachments, DingTalk sign-in, per-project roles, live sync) that runs both as a standalone web app and as a DeepSeek Harness plugin.",
   "icon": "icon.svg",
   "license": "Apache-2.0",

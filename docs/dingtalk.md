@@ -28,6 +28,42 @@ KanWeave 用**企业内部应用 + OAuth2 授权码换用户令牌**完成扫码
 | `KW_DINGTALK_REDIRECT_URI` | 与控制台填写的重定向 URL 完全一致 |
 | `KW_DINGTALK_MOCK` | `1` 时启用演示登录（立即通过、生成演示账号）；生产环境请勿开启 |
 
+## 用文件配置（插件 / 桌面端推荐）
+
+DeepSeek Harness 桌面端由启动器拉起，环境变量不好设，所以服务端也会读**数据目录**下的 `dingtalk.json`（优先取环境变量，其次取文件）：
+
+```json
+// ~/.dsh/kanweave/dingtalk.json   （独立站则是 ./.data/dingtalk.json）
+{
+  "appKey": "dingxxxxxxxxxxxx",
+  "appSecret": "你的AppSecret",
+  "corpId": "dingyyyyyyyyyyyy",
+  "redirectUri": "https://pm.example.com/kanweave/api/auth/dingtalk/callback"
+}
+```
+
+- 字段名同时接受钉钉控制台的 `appKey/appSecret` 与 OAuth2 的 `clientId/clientSecret`；`corpId`、`redirectUri` 同名。
+- `"mock": true` 可开启离线演示（不需要钉钉应用，仅用于确认按钮与流程）。
+- 直接改文件后必须重启进程；用脚本更省事：
+
+```bash
+node scripts/set-dingtalk.mjs --status
+node scripts/set-dingtalk.mjs --mock
+node scripts/set-dingtalk.mjs --app-key ... --app-secret ... --corp-id ... --redirect-uri ...
+node scripts/set-dingtalk.mjs --clear
+```
+
+## 为什么插件里看不到「使用钉钉登录」按钮
+
+按可能性排序：
+
+1. **还没配置凭据**：`GET /kanweave/api/health` 里 `dingtalk.configured` 与 `dingtalk.mock` 都是 `false` → 登录页不渲染该按钮。配置后需重启。
+2. **根本不在登录页**：插件以「本机用户」身份自动登录，直接进入看板。要点左下角的**「登录其他账号」**（host 模式专属按钮）才会显示登录页，钉钉按钮在那里。
+3. **重定向 URL 不一致**：按钮能点、钉钉也能扫码，但回调 400/失败。控制台与 `redirectUri` 必须逐字节一致；DSH 端口每次启动会变，本地直连请用固定端口的独立站或云端域名。
+4. **企业权限未批**：`Contact.User.Read` 未获管理员同意时，换取用户资料会失败（登录页面提示失败）。
+
+`api/auth/state` 的 `capabilities.dingtalkLogin` 是 UI 判断按钮是否显示的唯一依据；排查时先看这个字段。
+
 ## 流程
 
 ```

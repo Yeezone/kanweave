@@ -90,13 +90,7 @@ export function resolveOptions(overrides: Partial<ServiceOptions> & { mode: Serv
   const uiDir = overrides.uiDir ?? resolveUiDir()
   const maxAttachmentBytes = overrides.maxAttachmentBytes ?? numberFromEnv(env.KW_MAX_ATTACHMENT_BYTES, DEFAULT_MAX_ATTACHMENT_BYTES)
 
-  const dingtalk: DingTalkConfig = overrides.dingtalk ?? {
-    clientId: env.KW_DINGTALK_CLIENT_ID ?? '',
-    clientSecret: env.KW_DINGTALK_CLIENT_SECRET ?? '',
-    corpId: env.KW_DINGTALK_CORP_ID ?? '',
-    redirectUri: env.KW_DINGTALK_REDIRECT_URI ?? '',
-    mock: env.KW_DINGTALK_MOCK === '1' || env.KW_DINGTALK_MOCK === 'true',
-  }
+  const dingtalk: DingTalkConfig = overrides.dingtalk ?? resolveDingTalkConfig(env, dataDir)
 
   return {
     mode,
@@ -127,6 +121,58 @@ function readCloudFile(dataDir: string): string | undefined {
   } catch {
     return undefined
   }
+}
+
+/**
+ * Shape of `<dataDir>/dingtalk.json`.
+ *
+ * Both the DingTalk-console names (`appKey` / `appSecret`) and the OAuth2 names
+ * (`clientId` / `clientSecret`) are accepted, because the console labels are the
+ * ones users actually copy. `mock` enables the offline demo provider.
+ */
+export interface DingTalkFileConfig {
+  appKey?: string
+  appSecret?: string
+  clientId?: string
+  clientSecret?: string
+  corpId?: string
+  redirectUri?: string
+  mock?: boolean | string | number
+}
+
+/**
+ * Resolve DingTalk credentials: `KW_*` environment first (deployments), then
+ * `<dataDir>/dingtalk.json` (desktop plugin users), then nothing.
+ */
+export function resolveDingTalkConfig(env: NodeJS.ProcessEnv, dataDir: string): DingTalkConfig {
+  const file = readDingTalkFile(dataDir)
+  return {
+    clientId: env.KW_DINGTALK_CLIENT_ID || file.clientId || file.appKey || '',
+    clientSecret: env.KW_DINGTALK_CLIENT_SECRET || file.clientSecret || file.appSecret || '',
+    corpId: env.KW_DINGTALK_CORP_ID || file.corpId || '',
+    redirectUri: env.KW_DINGTALK_REDIRECT_URI || file.redirectUri || '',
+    mock:
+      env.KW_DINGTALK_MOCK === '1' ||
+      env.KW_DINGTALK_MOCK === 'true' ||
+      truthy(file.mock),
+  }
+}
+
+function readDingTalkFile(dataDir: string): DingTalkFileConfig {
+  try {
+    const raw = readFileSync(join(dataDir, 'dingtalk.json'), 'utf8')
+    const parsed = JSON.parse(raw) as unknown
+    return parsed && typeof parsed === 'object' ? (parsed as DingTalkFileConfig) : {}
+  } catch {
+    return {}
+  }
+}
+
+function truthy(value: unknown): boolean {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'number') return value !== 0
+  if (typeof value === 'string') return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase())
+  return false
 }
 
 /** Accept only absolute http(s) origins; anything else disables cloud mode. */
